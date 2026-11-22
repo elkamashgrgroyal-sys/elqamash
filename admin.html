@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة التحكم | Al Qamash Classic</title>
+<style>
+:root{--gold:#b8924a;--ink:#4a3a22;--cream:#faf6ef;--beige:#f1e8d8}
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--cream);color:var(--ink)}
+button{font:inherit;cursor:pointer}.btn{background:linear-gradient(#d4ad62,#a07c3a);color:#fff;border:0;border-radius:12px;padding:12px 24px;font-weight:700;font-size:16px}
+input,select{width:100%;padding:11px;border:1px solid #d9c18a;border-radius:10px;font-size:15px;background:#fffdf8;color:var(--ink);margin:4px 0}
+#login{min-height:100vh;display:grid;place-items:center;text-align:center;padding:20px;background:radial-gradient(circle at 50% 0,#fffdf8,#f3eadb)}
+#login .in{max-width:520px;width:100%}.lg{width:130px;height:130px;border:1.5px solid var(--gold);border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;font-size:56px;background:#fffdf8}
+#login h1{font:600 42px Georgia,serif;color:#8a6a2c;margin:6px 0}.badge{display:inline-block;border:1px solid #d9c18a;border-radius:10px;padding:6px 18px;margin:8px 0 18px}
+#app{display:none;min-height:100vh;flex-direction:column}
+header{display:flex;align-items:center;gap:16px;padding:14px 24px;background:#fffdf8;border-bottom:1px solid #eadfc5}
+header h1{font-size:24px;margin:0;flex:1}.wrap{display:flex;flex:1}aside{width:200px;background:var(--beige);padding:20px 0}
+aside button{display:block;width:100%;text-align:start;background:none;border:0;padding:14px 20px;color:#8a6a2c;font-weight:700;font-size:16px}
+aside button.on{background:var(--gold);color:#fff;border-radius:0 12px 12px 0}main{flex:1;padding:24px;max-width:900px}
+.tab{display:none}.drop{border:2px dashed #c9a35a;border-radius:18px;padding:18px;text-align:center;margin:10px 0;background:#fffdf8}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.cards div{background:#fffdf8;border:1px solid #e9dcc0;border-radius:16px;padding:18px;text-align:center}.cards b{display:block;font-size:34px;color:var(--gold)}
+.row{display:flex;gap:14px;align-items:center;background:#fffdf8;border:1px solid #e9dcc0;border-radius:16px;padding:12px;margin:12px 0}
+.row img{width:90px;height:90px;object-fit:cover;border-radius:10px}.in2{flex:1}.o{background:#fffdf8;border:1px solid var(--gold);color:#8a6a2c;border-radius:10px;padding:8px 14px;margin:2px}.o.r{color:#b33;border-color:#b33}.msg{margin:8px 0;color:#2a7a3a}
+@media(max-width:700px){.wrap{flex-direction:column}aside{width:100%;display:flex;overflow:auto;padding:0}aside button{white-space:nowrap}}
+</style></head><body>
+<div id="login"><div class="in">
+<div class="lg">✦</div><h1>Admin Login</h1><h2 style="margin:0 0 6px">دخول لوحة التحكم</h2>
+<div class="badge">🔒 Secure Admin Access • القماش</div>
+<input id="pw" type="password" placeholder="كلمة المرور / Enter Password" onkeydown="if(event.key==='Enter')signIn()">
+<button class="btn" style="width:100%;margin-top:8px" onclick="signIn()">Login / دخول</button>
+<div id="err" style="color:#b33;margin-top:8px"></div>
+</div></div>
+<div id="app">
+<header><div class="lg" style="width:56px;height:56px;font-size:26px;margin:0">✦</div><h1>Control Panel / لوحة التحكم</h1><button class="o" onclick="location.reload()">Logout / خروج</button></header>
+<div class="wrap"><aside>
+<button data-t="dash" onclick="show('dash')">📊 Dashboard</button>
+<button data-t="prod" onclick="show('prod')">📦 Products / المنتجات</button>
+<button data-t="gal" onclick="show('gal')">🖼️ Gallery / المعرض</button>
+<button data-t="wa" onclick="show('wa')">💬 WhatsApp</button>
+</aside><main>
+<div class="tab" id="t-dash"><h2>Dashboard</h2><div class="cards" id="cnt"></div><p style="color:#7a6642;margin-top:14px">
+<div class="tab" id="t-prod"><h2>أضف صورة جديدة</h2><input id="ne" placeholder="اسم المنتج"><input id="na" placeholder="اسم المنتج (عربي)">
+<div class="drop">صورة المنتج<br><input id="fb" type="file" accept="image/*"></div>
+<button class="btn" onclick="addProd()">+ Add / إضافة</button><div class="msg" id="pm"></div><h2>المنتجات</h2><div id="plist"></div></div>
+<div class="tab" id="t-gal"><h2>أحدث الأعمال</h2><input id="gt" placeholder="عنوان (اختياري)">
+<div class="drop">صور<br><input id="gf" type="file" accept="image/*" multiple></div>
+<button class="btn" onclick="addGal()">Upload / رفع</button><div class="msg" id="gm"></div><div id="glist"></div></div>
+<div class="tab" id="t-wa"><h2>WhatsApp</h2><p dir="ltr">+20 100 7432477</p><a class="btn" style="display:inline-block;text-decoration:none" target="_blank" href="https://wa.me/201007432477">Open WhatsApp</a></div>
+</main></div></div>
+<script>
+const $=i=>document.getElementById(i);
+let prods=JSON.parse(localStorage.getItem('qamash_prods')||'[]');
+let gals=JSON.parse(localStorage.getItem('qamash_gallery')||'[]');
+function signIn(){if($('pw').value==='qamash123'){$('login').style.display='none';$('app').style.display='flex';show('dash')}else $('err').textContent='كلمة المرور غلط'}
+function show(t){document.querySelectorAll('.tab').forEach(e=>e.style.display=e.id==='t-'+t?'block':'none');document.querySelectorAll('aside button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));if(t==='dash')$('cnt').innerHTML=`<div><b>${prods.length}</b>Products</div><div><b>${gals.length}</b>Works</div><div><b>1</b>WhatsApp</div>`;if(t==='prod')loadProd();if(t==='gal')loadGal()}
+function read(f,cb){let r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(f)}
+function addProd(){let f=$('fb').files[0];let n=$('ne').value||$('na').value||'منتج جديد';if(!f){prods.unshift({name:n,img:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800'});saveP();return}read(f,u=>{prods.unshift({name:n,img:u});saveP()})}
+function saveP(){localStorage.setItem('qamash_prods',JSON.stringify(prods));$('pm').textContent='تم ✅ Done';loadProd()}
+function loadProd(){$('plist').innerHTML=prods.map((x,i)=>`<div class="row"><img src="${x.img}"><div class="in2"><b>${x.name}</b></div><button class="o r" onclick="prods.splice(${i},1);saveP()">حذف</button></div>`).join('')||'—'}
+function addGal(){let fs=[...$('gf').files];if(!fs.length)return;fs.forEach(f=>read(f,u=>{gals.unshift({title:$('gt').value,img:u});localStorage.setItem('qamash_gallery',JSON.stringify(gals));$('gm').textContent='تم ✅';loadGal()}))}
+function loadGal(){$('glist').innerHTML=gals.map((x,i)=>`<div class="row"><img src="${x.img}"><div class="in2">${x.title||''}</div><button class="o r" onclick="gals.splice(${i},1);localStorage.setItem('qamash_gallery',JSON.stringify(gals));loadGal()">حذف</button></div>`).join('')||'—'}
+</script></body></html>
